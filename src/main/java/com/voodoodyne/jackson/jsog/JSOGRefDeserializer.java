@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 
 /**
- * Knows how to take either form of a JSOGRef (string or {@ref:string} and convert it back into a JSOGRef.
+ * Knows how to take either form of a JSOGRef (string or {@code {@ref:string}}) and convert it back into a JSOGRef.
  *
  * @author Jeff Schnitzer <jeff@infohazard.org>
  */
