@@ -4,7 +4,6 @@ package com.voodoodyne.jackson.jsog;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
@@ -16,9 +15,10 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 public class JSOGRefSerializer extends JsonSerializer<JSOGRef>
 {
 	@Override
-	public void serialize(JSOGRef value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
+	public void serialize(JSOGRef value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
 		if (value.used) {
 			jgen.writeStartObject();
+			jgen.writeObjectField("@class", value.refTo.getClass().getName());
 			jgen.writeObjectField(JSOGRef.REF_KEY, value.ref);
 			jgen.writeEndObject();
 		} else {

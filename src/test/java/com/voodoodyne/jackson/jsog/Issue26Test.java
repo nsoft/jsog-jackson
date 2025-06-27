@@ -15,8 +15,8 @@ import org.testng.collections.Lists;
 
 public class Issue26Test {
 
-  // @formatter:off
-  String TEST_JSON="[\"java.util.ArrayList\",[" +
+  public static final String WIHOUT_DEFAULT_TYPING = "[{\"@id\":\"1\",\"inner\":{\"@id\":\"2\",\"outer\":{\"@ref\":\"1\"}}},{\"@ref\":\"2\"}]";
+  public static final String TEST_JSON="[\"java.util.ArrayList\",[" +
 
       "{" +
         "\"@class\":\"com.voodoodyne.jackson.jsog.Issue26Test$Outer\"," +
@@ -64,6 +64,27 @@ public class Issue26Test {
     String json = mapper.writeValueAsString(source);
 
     assertEquals(TEST_JSON,json);
+  }
+
+  // This will also be caught by various other tests, but for completeness of this issue
+  // we should also explicitly test it here with the same objects
+  @Test
+  public void testSerializeWithoutDefaultTypeing() throws JsonProcessingException {
+    Outer outer = new Outer();
+    Inner inner = new Inner(outer);
+    // Turn on type info
+    ObjectMapper mapper = new ObjectMapper();
+
+    List<Object> source = Lists.newArrayList(outer, inner);
+    String json = mapper.writeValueAsString(source);
+
+    // make sure our test json is truly valid - this round trips through a list of maps
+    @SuppressWarnings("rawtypes")
+    ArrayList l = mapper.readValue(WIHOUT_DEFAULT_TYPING, ArrayList.class);
+    assertEquals(WIHOUT_DEFAULT_TYPING, mapper.writeValueAsString(l));
+
+    // type info should not be written unless Default typing is on
+    assertEquals(WIHOUT_DEFAULT_TYPING,json);
   }
 
   // classes used in this test

@@ -22,6 +22,7 @@ public final class JSOGRef
 	@JsonProperty(REF_KEY)
 	public String ref;
 
+	transient Object refTo;
 	/**
 	 * A flag we use to determine if this ref has already been serialized. Because jackson calls the same
 	 * code for serializing both ids and refs, we simply assume the first use is an id and all subsequent
@@ -35,8 +36,9 @@ public final class JSOGRef
 	}
 
 	/** */
-	public JSOGRef(int val) {
+	public JSOGRef(int val, Object refTo) {
 		this(Integer.toString(val));
+    this.refTo = refTo;
 	}
 
 	@Override

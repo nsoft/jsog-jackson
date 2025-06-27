@@ -52,7 +52,7 @@ public class JSOGGenerator extends ObjectIdGenerator<JSOGRef> {
 	public JSOGRef generateId(Object forPojo) {
         int id = _nextValue;
         ++_nextValue;
-        return new JSOGRef(id);
+        return new JSOGRef(id, forPojo);
 	}
 
     @Override
