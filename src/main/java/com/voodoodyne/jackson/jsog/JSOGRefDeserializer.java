@@ -40,9 +40,9 @@ public class JSOGRefDeserializer extends JsonDeserializer<JSOGRef>
 			if (p.currentToken() != JsonToken.VALUE_STRING) {
 				throw new IllegalStateException("@ref attribute should be followed by a value?");
 			}
-		String text = p.getText(); //grab our id
-		p.nextToken(); // consume END_OBJECT
-		return new JSOGRef(text);
+			String text = p.getText(); //grab our id
+			p.nextToken(); // consume END_OBJECT
+			return new JSOGRef(text);
 		} else {
 			throw new IllegalStateException("Unexpected Token Type:" + p.currentToken().name());
 		}
