@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerator;
  */
 public class JSOGGenerator extends ObjectIdGenerator<JSOGRef> {
 
-  public static final Object DEFAULT_TYPING_ATTRIBUTE = "JSOG_DEFAULT_TYPING_ATTRIBUTE";
+  public static final String DEFAULT_TYPING_ATTRIBUTE = "JSOG_DEFAULT_TYPING_ATTRIBUTE";
   private static final long serialVersionUID = 1L;
 
 	protected transient int _nextValue;
