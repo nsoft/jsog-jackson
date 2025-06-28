@@ -18,7 +18,10 @@ public class JSOGRefSerializer extends JsonSerializer<JSOGRef>
 	public void serialize(JSOGRef value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
 		if (value.used) {
 			jgen.writeStartObject();
-			jgen.writeObjectField("@class", value.refTo.getClass().getName());
+			Object attribute = provider.getAttribute(JSOGGenerator.DEFAULT_TYPING);
+			if (attribute != null) {
+				jgen.writeObjectField(attribute.toString(), value.refTo.getClass().getName());
+			}
 			jgen.writeObjectField(JSOGRef.REF_KEY, value.ref);
 			jgen.writeEndObject();
 		} else {

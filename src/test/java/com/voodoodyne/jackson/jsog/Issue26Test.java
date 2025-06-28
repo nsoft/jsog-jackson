@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.junit.Test;
@@ -58,8 +59,14 @@ public class Issue26Test {
     ObjectMapper mapper = new ObjectMapper()
         .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.EVERYTHING,
             JsonTypeInfo.As.PROPERTY);
+    // sadly the following throws a null pointer exception
+    // mapper.getSerializerProvider().setAttribute(JSOGGenerator.DEFAULT_TYPING, "@class");
 
-
+    // probably there is a better way to do this but it wasn't easy to find quickly.
+    SerializationConfig config = mapper.getSerializationConfig().withAttribute(JSOGGenerator.DEFAULT_TYPING, "@class");
+    mapper = new ObjectMapper()
+        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.EVERYTHING,
+            JsonTypeInfo.As.PROPERTY).setConfig(config);
     List<Object> source = Lists.newArrayList(outer, inner);
     String json = mapper.writeValueAsString(source);
 
