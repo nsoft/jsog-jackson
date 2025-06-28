@@ -1,6 +1,7 @@
 package com.voodoodyne.jackson.jsog;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +47,13 @@ public class Issue26Test {
             JsonTypeInfo.As.PROPERTY);
     // also test this when jackson is upgraded...
     // List<Object> target = mapper.readerForListOf(Object.class).readValue(json);
-    mapper.readValue(TEST_JSON, ArrayList.class);
-
+    @SuppressWarnings("rawtypes")
+    ArrayList list = mapper.readValue(TEST_JSON, ArrayList.class);
+    assertEquals(2, list.size());
+    assertEquals(Outer.class, list.get(0).getClass()); // prove it's not a list of map objects
+    assertEquals(Inner.class, list.get(1).getClass());
+    assertSame(((Outer)list.get(0)).inner, list.get(1));
+    assertSame(((Inner)list.get(1)).outer, list.get(0));
   }
 
   @Test
@@ -63,13 +69,12 @@ public class Issue26Test {
     // mapper.getSerializerProvider().setAttribute(JSOGGenerator.DEFAULT_TYPING, "@class");
 
     // probably there is a better way to do this but it wasn't easy to find quickly.
-    SerializationConfig config = mapper.getSerializationConfig().withAttribute(JSOGGenerator.DEFAULT_TYPING, "@class");
+    SerializationConfig config = mapper.getSerializationConfig().withAttribute(JSOGGenerator.DEFAULT_TYPING_ATTRIBUTE, "@class");
     mapper = new ObjectMapper()
         .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.EVERYTHING,
             JsonTypeInfo.As.PROPERTY).setConfig(config);
     List<Object> source = Lists.newArrayList(outer, inner);
     String json = mapper.writeValueAsString(source);
-
     assertEquals(TEST_JSON,json);
   }
 
@@ -132,6 +137,5 @@ public class Issue26Test {
       this.outer = outer;
     }
   }
-
 
 }
