@@ -1,5 +1,7 @@
 package com.voodoodyne.jackson.jsog;
 
+import static com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping.EVERYTHING;
+import static com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping.NON_FINAL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
@@ -22,7 +24,7 @@ import org.testng.collections.Lists;
 @RunWith(Parameterized.class)
 public class Issue26Test {
 
-  public static final String WIHOUT_DEFAULT_TYPING = "[{\"@id\":\"1\",\"inner\":{\"@id\":\"2\",\"outer\":{\"@ref\":\"1\"}}},{\"@ref\":\"2\"}]";
+  public static final String WITHOUT_DEFAULT_TYPING = "[{\"@id\":\"1\",\"inner\":{\"@id\":\"2\",\"outer\":{\"@ref\":\"1\"}}},{\"@ref\":\"2\"}]";
 
   // @formatter:off
   public static final String TEST_JSON=
@@ -46,7 +48,7 @@ public class Issue26Test {
       "]]";
   // @formatter:on
 
-  private DefaultTyping defaultTyping;
+  private final DefaultTyping defaultTyping;
 
   public Issue26Test(DefaultTyping defaultTyping) {
     this.defaultTyping = defaultTyping;
@@ -65,8 +67,8 @@ public class Issue26Test {
     //    objects.add(new Object[]{DefaultTyping.NON_CONCRETE_AND_ARRAYS});
 
     // These work
-    objects.add(new Object[]{DefaultTyping.NON_FINAL});
-    objects.add(new Object[]{DefaultTyping.EVERYTHING});
+    objects.add(new Object[]{NON_FINAL});
+    objects.add(new Object[]{EVERYTHING});
     return objects;
   }
 
@@ -75,7 +77,7 @@ public class Issue26Test {
   public void testDeserializeWithDefaultTyping() throws JsonProcessingException {
     PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder().allowIfSubType(Object.class).build();
     ObjectMapper mapper = new ObjectMapper()
-        .activateDefaultTyping(ptv, DefaultTyping.EVERYTHING,
+        .activateDefaultTyping(ptv, EVERYTHING,
             JsonTypeInfo.As.PROPERTY);
     System.out.println(defaultTyping);
     // also test this when jackson is upgraded...
@@ -112,6 +114,10 @@ public class Issue26Test {
         .withAttribute(JSOGGenerator.DEFAULT_TYPING_ATTRIBUTE, "@class");
 
     mapper = new ObjectMapper()
+        // FAIL_ON_UNKNOWN_PROPERTIES = false is dangerous if combined with any of
+        // JAVA_LANG_OBJECT, OBJECT_AND_NON_CONCRETE, NON_CONCRETE_AND_ARRAYS
+        // The final line of this test demonstrates that it can lead to duplication of objects.
+        // .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         .activateDefaultTyping(ptv, defaultTyping,
             JsonTypeInfo.As.PROPERTY).setConfig(config);
     List<Object> source = Lists.newArrayList(outer, inner);
@@ -125,6 +131,9 @@ public class Issue26Test {
     assertEquals(Outer.class, list.get(0).getClass()); // prove it's not a list of map objects
     assertEquals(Inner.class, list.get(1).getClass());
     assertSame(((Outer) list.get(0)).inner, list.get(1));
+
+    // This is critical. It fails when .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    // and any of JAVA_LANG_OBJECT, OBJECT_AND_NON_CONCRETE, NON_CONCRETE_AND_ARRAYS are used;
     assertSame(((Inner) list.get(1)).outer, list.get(0));
   }
 
@@ -135,7 +144,7 @@ public class Issue26Test {
     // Turn on type info
     PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder().allowIfSubType(Object.class).build();
     ObjectMapper mapper = new ObjectMapper()
-        .activateDefaultTyping(ptv, DefaultTyping.EVERYTHING,
+        .activateDefaultTyping(ptv, EVERYTHING,
             JsonTypeInfo.As.PROPERTY);
     // sadly the following throws a null pointer exception
     // mapper.getSerializerProvider().setAttribute(JSOGGenerator.DEFAULT_TYPING, "@class");
@@ -143,7 +152,7 @@ public class Issue26Test {
     // probably there is a better way to do this but it wasn't easy to find quickly.
     SerializationConfig config = mapper.getSerializationConfig().withAttribute(JSOGGenerator.DEFAULT_TYPING_ATTRIBUTE, "@class");
     mapper = new ObjectMapper()
-        .activateDefaultTyping(ptv, DefaultTyping.EVERYTHING,
+        .activateDefaultTyping(ptv, EVERYTHING,
             JsonTypeInfo.As.PROPERTY).setConfig(config);
     List<Object> source = Lists.newArrayList(outer, inner);
     String json = mapper.writeValueAsString(source);
@@ -164,11 +173,11 @@ public class Issue26Test {
 
     // make sure our test json is truly valid - this round trips through a list of maps
     @SuppressWarnings("rawtypes")
-    ArrayList l = mapper.readValue(WIHOUT_DEFAULT_TYPING, ArrayList.class);
-    assertEquals(WIHOUT_DEFAULT_TYPING, mapper.writeValueAsString(l));
+    ArrayList l = mapper.readValue(WITHOUT_DEFAULT_TYPING, ArrayList.class);
+    assertEquals(WITHOUT_DEFAULT_TYPING, mapper.writeValueAsString(l));
 
     // type info should not be written unless Default typing is on
-    assertEquals(WIHOUT_DEFAULT_TYPING, json);
+    assertEquals(WITHOUT_DEFAULT_TYPING, json);
   }
 
   // classes used in this test
