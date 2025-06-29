@@ -36,6 +36,11 @@ public class JSOGRefDeserializer extends JsonDeserializer<JSOGRef>
 		if (p.currentToken() == JsonToken.FIELD_NAME) {
 			// we are being called for { "@ref":"#" }
 			//   and starting here ------^
+			// Or in default typing we should get called for { "@class":"com.example.Thingy","@ref":"#" }
+			//   and be starting here --------------------------------------------------------^
+			//   because default typing will have consumed the type attribute already. See the javadoc for
+			//   com.fasterxml.jackson.databind.JsonDeserializer.deserialize(JsonParser, DeserializationContext)
+			//   which talks about this (yes that does seem slightly out of place, I'd guess it predates this method)
 			p.nextToken();
 			if (p.currentToken() != JsonToken.VALUE_STRING) {
 				throw new IllegalStateException("@ref attribute should be followed by a value?");
