@@ -108,6 +108,9 @@ public class Issue26Test {
     // but it wasn't easy to find. One can also set this directly when invoking the write
     // operations with mapper.writer().withAttribute(JSOGGenerator.DEFAULT_TYPING, "@class")
     // if single instantiation is important, but then you need to do it every time you write.
+    //
+    // Note: there IS a better way after https://github.com/FasterXML/jackson-databind/issues/3001
+    // but that requires 2.13.0+ jackson dependency.
     SerializationConfig config = mapper.getSerializationConfig()
         // obviously this attribute must be coordinated with the actual value used in the JSON
         // (could also be "@c" or a custom name depending on config)
